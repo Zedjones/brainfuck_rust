@@ -34,7 +34,8 @@ fn main() {
          }
     };
     if matches.opt_present("h") {
-        print_help(opts)
+        print_help(opts);
+        exit(0);
     }
     if matches.opt_present("s") {
         config.flush = true;
