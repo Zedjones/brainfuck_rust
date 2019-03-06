@@ -17,7 +17,7 @@ pub mod brainfuck {
             match res {
                 Ok(0) => break,
                 Ok(_) => (),
-                Err(e) => panic!("Failed to read from stdin: {}", e)
+                Err(e) => return Err(e)
             }
             line = line.trim().to_string();
             println!("{}", line);
