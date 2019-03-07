@@ -20,7 +20,7 @@ pub mod brainfuck {
     use std::fs::File;
     use std::io::{stdin, stdout, Write, Read};
 
-    fn construct_from_string(mut operations: String) -> Result<(BFContainer, String), String> {
+    fn construct_from_string(mut operations: String) -> Result<BFContainer, String> {
         let mut op_list = Vec::new();
         while operations.len() >= 1 {
             let c = match operations.chars().nth(0) {
@@ -37,28 +37,28 @@ pub mod brainfuck {
                 '.' => op_list.push(BFContainer::Operation(BFOps::Write)),
                 ',' => op_list.push(BFContainer::Operation(BFOps::Read)),
                 '[' => {
-                    match construct_from_string(operations[1..].to_string()) {
+                    operations.remove(0);
+                    match construct_from_string(operations.clone()) {
                         Ok(container) => {
-                            op_list.push(container.0);
-                            operations = container.1.clone();
+                            op_list.push(container);
                             if operations.len() == 0 {
-                                return Ok((BFContainer::Loop(op_list), "".to_string()))
+                                return Ok(BFContainer::Loop(op_list))
                             }
                         },
                         Err(err) => return Err(err.to_string())
                     }
                 },
                 ']' => {
-                    operations = operations[1..].to_string();
-                    return Ok((BFContainer::Loop(op_list), operations.to_string()))
+                    operations.remove(0);
+                    return Ok(BFContainer::Loop(op_list))
                 },
                 _ => ()
             };
             if c != '[' && c != ']' {
-                operations = operations[1..].to_string();
+                operations.remove(0);
             }
         }
-        Ok((BFContainer::Loop(op_list), "".to_string()))
+        Ok(BFContainer::Loop(op_list))
     }
 
     pub fn process_input() -> Result<(), std::io::Error> {
@@ -98,6 +98,7 @@ pub mod brainfuck {
             Ok(_) => (),
             Err(err) => return Err(err)
         };
+        contents.retain(|c| "[]<>,.+-".contains(c));
         let res = match construct_from_string(contents) {
             Ok(val) => val,
             Err(err) => panic!("{}", err.to_string())
