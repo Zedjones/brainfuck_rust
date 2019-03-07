@@ -4,7 +4,7 @@ extern crate brainfuck_rust;
 use std::env;
 use std::process::exit;
 use getopts::Options;
-use brainfuck_rust::brainfuck::process_input;
+use brainfuck_rust::brainfuck::{process_input, process_input_file};
 
 struct Config {
     zero_newline: bool,
@@ -45,9 +45,14 @@ fn main() {
     }
     if matches.opt_present("f") {
         match matches.opts_str(&["f".to_string()]) {
-            Some(val) => println!("{}", val),
+            Some(val) => match process_input_file(val) {
+                Ok(_) => (),
+                Err(err) => println!("{}", err.to_string())
+            },
             None => ()
         }
     }
-    process_input();
+    else{
+        process_input();
+    }
 }

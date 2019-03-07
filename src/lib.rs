@@ -1,6 +1,7 @@
 
 pub mod brainfuck {
 
+    #[derive(Debug)]
     enum BFOps {
         Add, 
         Subtract,
@@ -10,6 +11,7 @@ pub mod brainfuck {
         Read
     }
 
+    #[derive(Debug)]
     enum BFContainer {
         Operation(BFOps),
         Loop(Vec<BFContainer>)
@@ -32,12 +34,18 @@ pub mod brainfuck {
                 '>' => op_list.push(BFContainer::Operation(BFOps::MoveRight)),
                 '.' => op_list.push(BFContainer::Operation(BFOps::Write)),
                 ',' => op_list.push(BFContainer::Operation(BFOps::Read)),
-                '[' => match construct_from_string(operations) {
-                    Ok(container) => op_list.push(container),
-                    Err(err) => return Err(err.to_string())
+                '[' => {
+                        operations = &mut operations[1..];
+                        match construct_from_string(&mut operations) {
+                        Ok(container) => op_list.push(container),
+                        Err(err) => return Err(err.to_string())
+                    }
                 },
-                ']' => return Ok(BFContainer::Loop(op_list)),
-                _ => return Err(String::from("Invalid token in file."))
+                ']' => {
+                    operations = &mut operations[1..];
+                    return Ok(BFContainer::Loop(op_list))
+                },
+                _ => ()
             };
             operations = &mut operations[1..];
         }
@@ -81,6 +89,11 @@ pub mod brainfuck {
             Ok(_) => (),
             Err(err) => return Err(err)
         };
+        let res = match construct_from_string(&mut contents) {
+            Ok(val) => val,
+            Err(err) => panic!("{}", err.to_string())
+        };
+        println!("{:?}", res);
         Ok(())
     }
 }
