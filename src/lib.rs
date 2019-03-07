@@ -1,6 +1,11 @@
 
 pub mod brainfuck {
 
+    struct Cells {
+        cells: Vec<u8>,
+        curr_ind: usize
+    }
+
     #[derive(Debug)]
     enum BFOps {
         Add, 
@@ -11,14 +16,54 @@ pub mod brainfuck {
         Read
     }
 
+    impl BFOps {
+        fn operation(&self, mut cell_list: &mut Cells) {
+            match self {
+                BFOps::Add => cell_list.cells[cell_list.curr_ind] += 1,
+                BFOps::Subtract => cell_list.cells[cell_list.curr_ind] -= 1,
+                BFOps::MoveLeft => cell_list.curr_ind -= 1,
+                BFOps::MoveRight => cell_list.curr_ind += 1,
+                BFOps::Write => print!("{}", cell_list.cells[cell_list.curr_ind]),
+                BFOps::Read => {
+
+                }
+            }
+        }
+    }
+
     #[derive(Debug)]
     enum BFContainer {
         Operation(BFOps),
         Loop(Vec<BFContainer>)
     }
 
+    impl BFContainer {
+        fn get_loop(&self) -> Option<&Vec<BFContainer>>{
+            match &self {
+                BFContainer::Operation(_) => None,
+                BFContainer::Loop(res) => Some(res.clone())
+            }
+        }
+
+        fn is_loop(&self) -> bool {
+            match self {
+                BFContainer::Operation(_) => false,
+                BFContainer::Loop(_) => true
+            }
+        }
+
+    }
+
     use std::fs::File;
     use std::io::{stdin, stdout, Write, Read};
+
+    fn process_inner_loop(op_list: &Vec<BFContainer>, cell_list: &Vec<char>) {
+        
+    }
+
+    fn process_main_loop(op_list: &Vec<BFContainer>, cell_list: &Vec<char>) {
+
+    }
 
     fn construct_from_string(mut operations: &mut String) -> Result<BFContainer, String> {
         let mut op_list = Vec::new();
@@ -85,22 +130,27 @@ pub mod brainfuck {
         Ok(())
     }
 
-    pub fn process_input_file(filename: String) -> Result<(), std::io::Error> {
+    pub fn process_input_file(filename: String) -> Result<(), String> {
         let mut file = match File::open(filename) {
             Ok(val) => val,
-            Err(err) => return Err(err)
+            Err(err) => return Err(err.to_string())
         };
         let mut contents = String::new();
         match file.read_to_string(&mut contents) {
             Ok(_) => (),
-            Err(err) => return Err(err)
+            Err(err) => return Err(err.to_string())
         };
         contents.retain(|c| "[]<>,.+-".contains(c));
         let res = match construct_from_string(&mut contents) {
             Ok(val) => val,
             Err(err) => panic!("{}", err.to_string())
         };
-        println!("{:?}", res);
+        if res.is_loop() {
+            println!("{:?}", res.get_loop());
+        }
+        else {
+            println!("Oopsie whoopsie");
+        }
         Ok(())
     }
 }
