@@ -20,12 +20,14 @@ pub mod brainfuck {
     use std::fs::File;
     use std::io::{stdin, stdout, Write, Read};
 
-    fn construct_from_string(mut operations: &mut str) -> Result<BFContainer, String> {
+    fn construct_from_string(mut operations: String) -> Result<(BFContainer, String), String> {
         let mut op_list = Vec::new();
         while operations.len() >= 1 {
             let c = match operations.chars().nth(0) {
                 Some(c) => c,
-                None => return Err(String::from("oh no")) // if this happens we're fucked
+                None => { 
+                    return Err(String::from("oh no")) // if this happens we're fucked
+                }
             };
             match c {
                 '+' => op_list.push(BFContainer::Operation(BFOps::Add)),
@@ -35,21 +37,27 @@ pub mod brainfuck {
                 '.' => op_list.push(BFContainer::Operation(BFOps::Write)),
                 ',' => op_list.push(BFContainer::Operation(BFOps::Read)),
                 '[' => {
-                        operations = &mut operations[1..];
-                        match construct_from_string(&mut operations) {
-                        Ok(container) => op_list.push(container),
+                    operations = operations[1..].to_string();
+                    match construct_from_string(operations) {
+                        Ok(container) => {
+                            op_list.push(container.0);
+                            operations = container.1.clone();
+                            if operations.len() == 0 {
+                                return Ok((BFContainer::Loop(op_list), "".to_string()))
+                            }
+                        },
                         Err(err) => return Err(err.to_string())
                     }
                 },
                 ']' => {
-                    operations = &mut operations[1..];
-                    return Ok(BFContainer::Loop(op_list))
+                    operations = operations[1..].to_string();
+                    return Ok((BFContainer::Loop(op_list), operations.to_string()))
                 },
                 _ => ()
             };
-            operations = &mut operations[1..];
+            operations = operations[1..].to_string();
         }
-        Ok(BFContainer::Loop(op_list))
+        Ok((BFContainer::Loop(op_list), "".to_string()))
     }
 
     pub fn process_input() -> Result<(), std::io::Error> {
@@ -89,7 +97,7 @@ pub mod brainfuck {
             Ok(_) => (),
             Err(err) => return Err(err)
         };
-        let res = match construct_from_string(&mut contents) {
+        let res = match construct_from_string(contents) {
             Ok(val) => val,
             Err(err) => panic!("{}", err.to_string())
         };

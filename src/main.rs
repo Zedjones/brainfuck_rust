@@ -1,9 +1,11 @@
 extern crate getopts;
 extern crate brainfuck_rust;
+extern crate time;
 
 use std::env;
 use std::process::exit;
 use getopts::Options;
+use time::PreciseTime;
 use brainfuck_rust::brainfuck::{process_input, process_input_file};
 
 struct Config {
@@ -16,6 +18,7 @@ fn print_help(opts: Options) {
 }
 
 fn main() {
+    let start = PreciseTime::now();
     let args: Vec<String> = env::args().collect();
 
     let mut opts = Options::new();
@@ -46,7 +49,10 @@ fn main() {
     if matches.opt_present("f") {
         match matches.opts_str(&["f".to_string()]) {
             Some(val) => match process_input_file(val) {
-                Ok(_) => (),
+                Ok(_) => {
+                    let end = PreciseTime::now();
+                    println!("{}", start.to(end));
+                },
                 Err(err) => println!("{}", err.to_string())
             },
             None => ()
