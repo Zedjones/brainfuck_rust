@@ -20,7 +20,7 @@ pub mod brainfuck {
     use std::fs::File;
     use std::io::{stdin, stdout, Write, Read};
 
-    fn construct_from_string(mut operations: String) -> Result<BFContainer, String> {
+    fn construct_from_string(mut operations: &mut String) -> Result<BFContainer, String> {
         let mut op_list = Vec::new();
         while operations.len() >= 1 {
             let c = match operations.chars().nth(0) {
@@ -38,12 +38,9 @@ pub mod brainfuck {
                 ',' => op_list.push(BFContainer::Operation(BFOps::Read)),
                 '[' => {
                     operations.remove(0);
-                    match construct_from_string(operations.clone()) {
+                    match construct_from_string(&mut operations) {
                         Ok(container) => {
                             op_list.push(container);
-                            if operations.len() == 0 {
-                                return Ok(BFContainer::Loop(op_list))
-                            }
                         },
                         Err(err) => return Err(err.to_string())
                     }
@@ -99,7 +96,7 @@ pub mod brainfuck {
             Err(err) => return Err(err)
         };
         contents.retain(|c| "[]<>,.+-".contains(c));
-        let res = match construct_from_string(contents) {
+        let res = match construct_from_string(&mut contents) {
             Ok(val) => val,
             Err(err) => panic!("{}", err.to_string())
         };
