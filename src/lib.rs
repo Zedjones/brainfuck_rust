@@ -65,7 +65,7 @@ pub mod brainfuck {
 
     }
 
-    fn construct_from_string(mut operations: &mut String) -> Result<BFContainer, String> {
+    fn construct_from_string(mut operations: &mut String) -> Result<Vec<BFContainer>, String> {
         let mut op_list = Vec::new();
         while operations.len() >= 1 {
             let c = match operations.chars().nth(0) {
@@ -85,14 +85,14 @@ pub mod brainfuck {
                     operations.remove(0);
                     match construct_from_string(&mut operations) {
                         Ok(container) => {
-                            op_list.push(container);
+                            op_list.push(BFContainer::Loop(container));
                         },
                         Err(err) => return Err(err.to_string())
                     }
                 },
                 ']' => {
                     operations.remove(0);
-                    return Ok(BFContainer::Loop(op_list))
+                    return Ok(op_list)
                 },
                 _ => ()
             };
@@ -100,7 +100,7 @@ pub mod brainfuck {
                 operations.remove(0);
             }
         }
-        Ok(BFContainer::Loop(op_list))
+        Ok(op_list)
     }
 
     pub fn process_input() -> Result<(), std::io::Error> {
@@ -145,12 +145,7 @@ pub mod brainfuck {
             Ok(val) => val,
             Err(err) => panic!("{}", err.to_string())
         };
-        if res.is_loop() {
-            println!("{:?}", res.get_loop());
-        }
-        else {
-            println!("Oopsie whoopsie");
-        }
+        println!("{:?}", res);
         Ok(())
     }
 }
