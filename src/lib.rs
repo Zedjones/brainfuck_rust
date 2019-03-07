@@ -37,8 +37,7 @@ pub mod brainfuck {
                 '.' => op_list.push(BFContainer::Operation(BFOps::Write)),
                 ',' => op_list.push(BFContainer::Operation(BFOps::Read)),
                 '[' => {
-                    operations = operations[1..].to_string();
-                    match construct_from_string(operations) {
+                    match construct_from_string(operations[1..].to_string()) {
                         Ok(container) => {
                             op_list.push(container.0);
                             operations = container.1.clone();
@@ -55,7 +54,9 @@ pub mod brainfuck {
                 },
                 _ => ()
             };
-            operations = operations[1..].to_string();
+            if c != '[' && c != ']' {
+                operations = operations[1..].to_string();
+            }
         }
         Ok((BFContainer::Loop(op_list), "".to_string()))
     }
