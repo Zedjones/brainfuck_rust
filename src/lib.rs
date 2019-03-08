@@ -5,6 +5,9 @@ pub mod brainfuck {
     use std::io::{stdin, stdout, Write, Read};
     use std::iter::{repeat, FromIterator};
 
+    const INITIAL_CELL_CAP: usize = 30_000;
+    const RESIZE_SCALE: usize = 30_000;
+
     struct Cells {
         cells: Vec<u8>,
         curr_ind: usize
@@ -12,10 +15,10 @@ pub mod brainfuck {
 
     impl Cells {
         fn new() -> Cells {
-            Cells{cells: Vec::from_iter(repeat(0).take(30000)), curr_ind: 0}
+            Cells{cells: Vec::from_iter(repeat(0).take(INITIAL_CELL_CAP)), curr_ind: 0}
         }
         fn extend (&mut self) {
-            self.cells.extend(repeat(0).take(30000));
+            self.cells.extend(repeat(0).take(RESIZE_SCALE));
         }
     }
 
