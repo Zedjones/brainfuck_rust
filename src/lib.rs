@@ -41,7 +41,7 @@ pub mod brainfuck {
                 BFOps::MoveRight => cell_list.curr_ind += 1,
                 BFOps::Write => print!("{}", cell_list.cells[cell_list.curr_ind]),
                 BFOps::Read => {
-                    let input: Option<u8> = std::io::stdin()
+                    let input: Option<u8> = stdin()
                         .bytes()
                         .next()
                         .and_then(|result| result.ok())
