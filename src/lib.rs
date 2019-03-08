@@ -38,8 +38,13 @@ pub mod brainfuck {
                 BFOps::Add => cell_list.cells[cell_list.curr_ind] += 1,
                 BFOps::Subtract => cell_list.cells[cell_list.curr_ind] -= 1,
                 BFOps::MoveLeft => cell_list.curr_ind -= 1,
-                BFOps::MoveRight => cell_list.curr_ind += 1,
-                BFOps::Write => print!("{}", cell_list.cells[cell_list.curr_ind]),
+                BFOps::MoveRight => {
+                    if cell_list.curr_ind == cell_list.cells.len() {
+                        cell_list.extend();
+                    }
+                    cell_list.curr_ind += 1
+                },
+                BFOps::Write => print!("{}", cell_list.cells[cell_list.curr_ind] as char),
                 BFOps::Read => {
                     let input: Option<u8> = stdin()
                         .bytes()
@@ -80,7 +85,14 @@ pub mod brainfuck {
     }
 
     fn process_inner_loop(op_list: &Vec<BFContainer>, mut cell_list: &mut Cells) {
-        
+        while cell_list.cells[cell_list.curr_ind] != 0 {
+            for val in op_list.iter() {
+                match val {
+                    BFContainer::Operation(op) => op.operation(&mut cell_list),
+                    BFContainer::Loop(bf_loop) => process_inner_loop(&bf_loop, &mut cell_list)
+                }
+            }
+        }
     }
 
     fn process_main_loop(op_list: &Vec<BFContainer>, mut cell_list: &mut Cells) {
@@ -95,7 +107,7 @@ pub mod brainfuck {
     fn construct_from_string(mut operations: &mut String) -> Result<Vec<BFContainer>, String> {
         let mut op_list = Vec::new();
         while operations.len() >= 1 {
-            let c = match operations.chars().nth(0) {
+            let c = match operations.chars().next() {
                 Some(c) => c,
                 None => { 
                     return Err(String::from("oh no")) // if this happens we're fucked
@@ -172,8 +184,8 @@ pub mod brainfuck {
             Ok(val) => val,
             Err(err) => panic!("{}", err.to_string())
         };
-        println!("{:?}", res);
-        let cells = Cells::new();
+        let mut cells = Cells::new();
+        process_main_loop(&res, &mut cells);
         Ok(())
     }
 }
