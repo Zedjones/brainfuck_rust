@@ -3,7 +3,7 @@ pub mod brainfuck {
 
     use std::fs::File;
     use std::io::{stdin, stdout, Write, Read};
-    use std::iter::repeat;
+    use std::iter::{repeat, FromIterator};
 
     struct Cells {
         cells: Vec<u8>,
@@ -12,9 +12,7 @@ pub mod brainfuck {
 
     impl Cells {
         fn new() -> Cells {
-            let mut ret = Cells{cells: Vec::new(), curr_ind: 0};
-            ret.extend();
-            ret
+            Cells{cells: Vec::from_iter(repeat(0).take(30000)), curr_ind: 0}
         }
         fn extend (&mut self) {
             self.cells.extend(repeat(0).take(30000));
