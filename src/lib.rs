@@ -1,9 +1,24 @@
 
 pub mod brainfuck {
 
+    use std::fs::File;
+    use std::io::{stdin, stdout, Write, Read};
+    use std::iter::repeat;
+
     struct Cells {
         cells: Vec<u8>,
         curr_ind: usize
+    }
+
+    impl Cells {
+        fn new() -> Cells {
+            let mut ret = Cells{cells: Vec::new(), curr_ind: 0};
+            ret.extend();
+            ret
+        }
+        fn extend (&mut self) {
+            self.cells.extend(repeat(0).take(30000));
+        }
     }
 
     #[derive(Debug)]
@@ -25,7 +40,16 @@ pub mod brainfuck {
                 BFOps::MoveRight => cell_list.curr_ind += 1,
                 BFOps::Write => print!("{}", cell_list.cells[cell_list.curr_ind]),
                 BFOps::Read => {
-
+                    let input: Option<u8> = std::io::stdin()
+                        .bytes()
+                        .next()
+                        .and_then(|result| result.ok())
+                        .map(|byte| byte as u8);
+                    let val = match input {
+                        Some(input) => input,
+                        None => 0
+                    };
+                    cell_list.cells[cell_list.curr_ind] = val;
                 }
             }
         }
@@ -54,15 +78,17 @@ pub mod brainfuck {
 
     }
 
-    use std::fs::File;
-    use std::io::{stdin, stdout, Write, Read};
-
-    fn process_inner_loop(op_list: &Vec<BFContainer>, cell_list: &Vec<char>) {
+    fn process_inner_loop(op_list: &Vec<BFContainer>, mut cell_list: &mut Cells) {
         
     }
 
-    fn process_main_loop(op_list: &Vec<BFContainer>, cell_list: &Vec<char>) {
-
+    fn process_main_loop(op_list: &Vec<BFContainer>, mut cell_list: &mut Cells) {
+        for val in op_list.iter() {
+            match val {
+                BFContainer::Operation(op) => op.operation(&mut cell_list),
+                BFContainer::Loop(bf_loop) => process_inner_loop(&bf_loop, &mut cell_list)
+            }
+        }
     }
 
     fn construct_from_string(mut operations: &mut String) -> Result<Vec<BFContainer>, String> {
@@ -146,6 +172,7 @@ pub mod brainfuck {
             Err(err) => panic!("{}", err.to_string())
         };
         println!("{:?}", res);
+        let cells = Cells::new();
         Ok(())
     }
 }
